@@ -9,7 +9,7 @@ Docker Hub account) as a public registry on your own domain name.
 You can also fork this project and customize as a middleware and deploy to
 [Cloud Run][run] or somewhere else since it’s a generic docker registry proxy.
 
-[![Run on Google Cloud](https://storage.googleapis.com/cloudrun/button.png)](https://console.cloud.google.com/cloudshell/editor?shellonly=true&cloudshell_image=gcr.io/cloudrun/button&cloudshell_git_repo=https://github.com/ahmetb/serverless-registry-proxy)
+[![Run on Google Cloud](https://storage.googleapis.com/cloudrun/button.png)](https://console.cloud.google.com/cloudshell/editor?shellonly=true&cloudshell_image=gcr.io/cloudrun/button&cloudshell_git_repo=https://github.com/pachama/infra-artifact-registry-proxy)
 
 For example, if you have a public registry, and offering images publicly with
 names such as:
@@ -133,39 +133,39 @@ environment variables:
 > ⚠️ This will make images in your private GCR registries publicly accessible on
 > the internet.
 
-1. Create an [IAM Service
-   Account](https://cloud.google.com/iam/docs/creating-managing-service-accounts#creating_a_service_account).
+1.  Create an [IAM Service
+    Account](https://cloud.google.com/iam/docs/creating-managing-service-accounts#creating_a_service_account).
 
-1. [Give it
-   permissions](https://cloud.google.com/container-registry/docs/access-control)
-   to access the GCR registry GCS Bucket. (Or simply, you can give it the
-   project-wide `Storage Object Viewer` role.)
+1.  [Give it
+    permissions](https://cloud.google.com/container-registry/docs/access-control)
+    to access the GCR registry GCS Bucket. (Or simply, you can give it the
+    project-wide `Storage Object Viewer` role.)
 
-1. Copy your service account JSON key into the root of the repository as
-   `key.json`.
+1.  Copy your service account JSON key into the root of the repository as
+    `key.json`.
 
-1. (Not ideal, but whatever) Rebuild the docker image with your service account
-   key JSON in it. This will require editing `Dockerfile` to add `COPY` and
-   `ENV` directives like:
+1.  (Not ideal, but whatever) Rebuild the docker image with your service account
+    key JSON in it. This will require editing `Dockerfile` to add `COPY` and
+    `ENV` directives like:
 
-       COPY key.json /app/key.json
-       ENV GOOGLE_APPLICATION_CREDENTIALS /app/key.json
-       ENTRYPOINT [...]
+        COPY key.json /app/key.json
+        ENV GOOGLE_APPLICATION_CREDENTIALS /app/key.json
+        ENTRYPOINT [...]
 
-   You need to rebuild and deploy the updated image.
+    You need to rebuild and deploy the updated image.
 
 ### Configuration
 
 While deploying, you can set additional environment variables for customization:
 
-| Key | Value |
-|-----|-------|
-| `REGISTRY_HOST` | specify  hostname for target registry, e.g. `gcr.io`. |
-| `DISABLE_BROWSER_REDIRECTS` |  if you set this variable to any value,   visiting `example.com/image` on this browser will not redirect to  `[REGISTRY_HOST]/[REPO_PREFIX]/image` to allow your users to browse the image on GCR. If you're exposing private registries, you might want to set this variable. |
-| `AUTH_HEADER` | The `Authentication: [...]` header’s value to authenticate to the target registry |
-| `GOOGLE_APPLICATION_CREDENTIALS` | (For `gcr.io`) Path to the IAM service account JSON key  file to expose the private GCR registries publicly. |
+| Key                              | Value                                                                                                                                                                                                                                                                      |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `REGISTRY_HOST`                  | specify hostname for target registry, e.g. `gcr.io`.                                                                                                                                                                                                                       |
+| `DISABLE_BROWSER_REDIRECTS`      | if you set this variable to any value, visiting `example.com/image` on this browser will not redirect to `[REGISTRY_HOST]/[REPO_PREFIX]/image` to allow your users to browse the image on GCR. If you're exposing private registries, you might want to set this variable. |
+| `AUTH_HEADER`                    | The `Authentication: [...]` header’s value to authenticate to the target registry                                                                                                                                                                                          |
+| `GOOGLE_APPLICATION_CREDENTIALS` | (For `gcr.io`) Path to the IAM service account JSON key file to expose the private GCR registries publicly.                                                                                                                                                                |
 
------
+---
 
 This is not an official Google project. See [LICENSE](./LICENSE).
 
