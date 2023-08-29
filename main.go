@@ -16,9 +16,11 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -224,6 +226,25 @@ func (rrt *registryRoundtripper) RoundTrip(req *http.Request) (*http.Response, e
 		return nil, err
 	}
 
+	// Step 1: Read the entire resp.Body into a byte slice
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	// Step 2: Convert to string
+	bodyStr := string(bodyBytes)
+
+	// Step 3: Replace all occurrences of the target string
+	bodyStr = strings.ReplaceAll(bodyStr, "us-central1-python.pkg.dev", "infra-artifact-registry-proxy-6667p4fkpq-uc.a.run.app")
+
+	// Step 4: Convert back to byte slice
+	newBodyBytes := []byte(bodyStr)
+
+	// Step 5: Create a new io.ReadCloser and set it as resp.Body
+	resp.Body = io.NopCloser(bytes.NewBuffer(newBodyBytes))
+
+	// Now, resp.Body contains the modified content.
 	b, err := httputil.DumpResponse(resp, true)
 	if err != nil {
 		log.Fatalln(err)
