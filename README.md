@@ -1,3 +1,5 @@
+Pachama forked version modifies this serverless function to include automatic authentication to the private artifact registry.
+
 # Serverless Container Registry Proxy
 
 This project offers a very simple reverse proxy that lets you expose your public
