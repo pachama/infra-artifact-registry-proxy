@@ -247,14 +247,17 @@ func (rrt *registryRoundtripper) RoundTrip(req *http.Request) (*http.Response, e
 
 	fmt.Println(string(b))
 
-	// // Google Artifact Registry sends a "location: /artifacts-downloads/..." URL
-	// // to download blobs. We don't want these routed to the proxy itself.
-	// if locHdr := resp.Header.Get("location"); req.Method == http.MethodGet &&
-	// 	resp.StatusCode == http.StatusFound && strings.HasPrefix(locHdr, "/") {
-	// 	resp.Header.Set("location", req.URL.Scheme+"://"+req.URL.Host+locHdr)
-	// }
+	file, _ := os.Open("/etc/nginx/nginx.conf")
+	fmt.Print(file)
 
-	// updateTokenEndpoint(resp, origHost)
+	// Google Artifact Registry sends a "location: /artifacts-downloads/..." URL
+	// to download blobs. We don't want these routed to the proxy itself.
+	if locHdr := resp.Header.Get("location"); req.Method == http.MethodGet &&
+		resp.StatusCode == http.StatusFound && strings.HasPrefix(locHdr, "/") {
+		resp.Header.Set("location", req.URL.Scheme+"://"+req.URL.Host+locHdr)
+	}
+
+	updateTokenEndpoint(resp, origHost)
 	return resp, nil
 }
 
@@ -264,14 +267,14 @@ func (rrt *registryRoundtripper) RoundTrip(req *http.Request) (*http.Response, e
 //
 // to point to the https://host/token endpoint to force using local token
 // endpoint proxy.
-// func updateTokenEndpoint(resp *http.Response, host string) {
-// 	v := resp.Header.Get("www-authenticate")
-// 	if v == "" {
-// 		return
-// 	}
-// 	cur := fmt.Sprintf("https://%s/_token", host)
-// 	resp.Header.Set("www-authenticate", realm.ReplaceAllString(v, fmt.Sprintf(`realm="%s"`, cur)))
-// }
+func updateTokenEndpoint(resp *http.Response, host string) {
+	v := resp.Header.Get("www-authenticate")
+	if v == "" {
+		return
+	}
+	cur := fmt.Sprintf("https://%s/_token", host)
+	resp.Header.Set("www-authenticate", realm.ReplaceAllString(v, fmt.Sprintf(`realm="%s"`, cur)))
+}
 
 type authenticator interface {
 	AuthHeader() string
