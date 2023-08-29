@@ -18,7 +18,6 @@ package main
 import (
 	"context"
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -225,39 +224,12 @@ func (rrt *registryRoundtripper) RoundTrip(req *http.Request) (*http.Response, e
 		return nil, err
 	}
 
-	// Check the HTTP status code
-	if resp.StatusCode != 200 {
-		fmt.Println("Received non-200 status code:", resp.StatusCode)
-	}
-
-	// Check the Content-Type header
-	if contentType := resp.Header.Get("Content-Type"); contentType != "application/json" {
-		fmt.Println("Received non-JSON response:", contentType)
-	}
-
-	// Read the response body
-	body, err := ioutil.ReadAll(resp.Body)
+	b, err := httputil.DumpResponse(resp, true)
 	if err != nil {
-		fmt.Println("Error:", err)
+		log.Fatalln(err)
 	}
 
-	// Print raw response
-	fmt.Println("Raw Response:", string(body))
-
-	// Unmarshal the JSON into a map
-	var data map[string]interface{}
-	if err := json.Unmarshal(body, &data); err != nil {
-		fmt.Println("Error:", err)
-	}
-
-	// Pretty-print the JSON
-	prettyJSON, err := json.MarshalIndent(data, "", "  ")
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
-
-	// Convert pretty JSON bytes to string and print it
-	fmt.Println(string(prettyJSON))
+	fmt.Println(string(b))
 
 	// Google Artifact Registry sends a "location: /artifacts-downloads/..." URL
 	// to download blobs. We don't want these routed to the proxy itself.
