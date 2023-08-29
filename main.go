@@ -225,11 +225,24 @@ func (rrt *registryRoundtripper) RoundTrip(req *http.Request) (*http.Response, e
 		return nil, err
 	}
 
+	// Check the HTTP status code
+	if resp.StatusCode != 200 {
+		fmt.Println("Received non-200 status code:", resp.StatusCode)
+	}
+
+	// Check the Content-Type header
+	if contentType := resp.Header.Get("Content-Type"); contentType != "application/json" {
+		fmt.Println("Received non-JSON response:", contentType)
+	}
+
 	// Read the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
+
+	// Print raw response
+	fmt.Println("Raw Response:", string(body))
 
 	// Unmarshal the JSON into a map
 	var data map[string]interface{}
