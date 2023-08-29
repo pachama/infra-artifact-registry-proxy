@@ -75,15 +75,6 @@ func main() {
 	}
 	log.Printf("discovered token endpoint for backend registry: %s", tokenEndpoint)
 
-	entries, err := os.ReadDir("/key.json")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for _, e := range entries {
-		fmt.Println(e.Name())
-	}
-
 	var auth authenticator
 	if basic := os.Getenv("AUTH_HEADER"); basic != "" {
 		auth = authHeader(basic)
