@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    https://www.apache.org/licenses/LICENSE-2.0
+	https://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -34,8 +34,8 @@ const (
 )
 
 var (
-	re                 = regexp.MustCompile(`^/v2/`)
-	realm              = regexp.MustCompile(`realm="(.*?)"`)
+	re    = regexp.MustCompile(`^/v2/`)
+	realm = regexp.MustCompile(`realm="(.*?)"`)
 )
 
 type myContextKey string
@@ -68,7 +68,7 @@ func main() {
 		repoPrefix: repoPrefix,
 	}
 
-	tokenEndpoint, err := discoverTokenService(reg.host)
+	tokenEndpoint, err := discoverTokenService(reg.host, reg.repoPrefix)
 	if err != nil {
 		log.Fatalf("target registry's token endpoint could not be discovered: %+v", err)
 	}
@@ -110,8 +110,8 @@ func main() {
 	log.Printf("server shutdown successfully")
 }
 
-func discoverTokenService(registryHost string) (string, error) {
-	url := fmt.Sprintf("https://%s/v2/", registryHost)
+func discoverTokenService(registryHost string, registryPrefix string) (string, error) {
+	url := fmt.Sprintf("https://%s/%s/", registryHost, registryPrefix)
 	resp, err := http.Get(url)
 	if err != nil {
 		return "", fmt.Errorf("failed to query the registry host %s: %+v", registryHost, err)
@@ -235,7 +235,9 @@ func (rrt *registryRoundtripper) RoundTrip(req *http.Request) (*http.Response, e
 }
 
 // updateTokenEndpoint modifies the response header like:
-//    Www-Authenticate: Bearer realm="https://auth.docker.io/token",service="registry.docker.io"
+//
+//	Www-Authenticate: Bearer realm="https://auth.docker.io/token",service="registry.docker.io"
+//
 // to point to the https://host/token endpoint to force using local token
 // endpoint proxy.
 func updateTokenEndpoint(resp *http.Response, host string) {
