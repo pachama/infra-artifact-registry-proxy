@@ -238,7 +238,7 @@ func (rrt *registryRoundtripper) RoundTrip(req *http.Request) (*http.Response, e
 			fmt.Println(prettyJSON.String())
 		}
 
-		log.Printf("request completed (status=%d) url=%s, body=%s", resp.StatusCode, req.URL, resp.Body)
+		log.Printf("request completed (status=%d) url=%s", resp.StatusCode, req.URL)
 	} else {
 		log.Printf("request failed with error: %+v", err)
 		return nil, err
