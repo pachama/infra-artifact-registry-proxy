@@ -90,11 +90,12 @@ func main() {
 	mux := http.NewServeMux()
 	if browserRedirects {
 		mux.Handle("/", browserRedirectHandler(reg))
+	} else {
+		mux.Handle("/", registryAPIProxy(reg, auth))
 	}
 	if tokenEndpoint != "" {
 		mux.Handle("/_token", tokenProxyHandler(tokenEndpoint, repoPrefix))
 	}
-	mux.Handle("/v2/", registryAPIProxy(reg, auth))
 
 	addr := fmt.Sprintf("%s:%s", host, port)
 	handler := captureHostHeader(mux)
@@ -112,7 +113,7 @@ func main() {
 }
 
 func discoverTokenService(registryHost string) (string, error) {
-	url := fmt.Sprintf("https://%s/v2/", registryHost)
+	url := fmt.Sprintf("https://%s/", registryHost)
 	resp, err := http.Get(url)
 	if err != nil {
 		return "", fmt.Errorf("failed to query the registry host %s: %+v", registryHost, err)
@@ -178,23 +179,23 @@ func browserRedirectHandler(cfg registryConfig) http.HandlerFunc {
 func registryAPIProxy(cfg registryConfig, auth authenticator) http.HandlerFunc {
 	return (&httputil.ReverseProxy{
 		FlushInterval: -1,
-		Director:      rewriteRegistryV2URL(cfg),
+		Director:      rewriteRegistryURL(cfg),
 		Transport: &registryRoundtripper{
 			auth: auth,
 		},
 	}).ServeHTTP
 }
 
-// rewriteRegistryV2URL rewrites request.URL like /v2/* that come into the server
-// into https://[GCR_HOST]/v2/[PROJECT_ID]/*. It leaves /v2/ as is.
-func rewriteRegistryV2URL(c registryConfig) func(*http.Request) {
+// rewriteRegistryURL rewrites request.URL like /* that come into the server
+// into https://[GCR_HOST]/[PROJECT_ID]/*.
+func rewriteRegistryURL(c registryConfig) func(*http.Request) {
 	return func(req *http.Request) {
 		u := req.URL.String()
 		req.Host = c.host
 		req.URL.Scheme = "https"
 		req.URL.Host = c.host
 		if req.URL.Path != "/v2/" {
-			req.URL.Path = re.ReplaceAllString(req.URL.Path, fmt.Sprintf("/v2/%s/", c.repoPrefix))
+			req.URL.Path = re.ReplaceAllString(req.URL.Path, fmt.Sprintf("/%s/", c.repoPrefix))
 		}
 		log.Printf("rewrote url: %s into %s", u, req.URL)
 	}
