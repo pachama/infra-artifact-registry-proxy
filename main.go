@@ -68,10 +68,7 @@ func main() {
 		repoPrefix: repoPrefix,
 	}
 
-	tokenEndpoint, err := discoverTokenService(reg.host, reg.repoPrefix)
-	if err != nil {
-		log.Fatalf("target registry's token endpoint could not be discovered: %+v", err)
-	}
+	tokenEndpoint := ""
 	log.Printf("discovered token endpoint for backend registry: %s", tokenEndpoint)
 
 	var auth authenticator
