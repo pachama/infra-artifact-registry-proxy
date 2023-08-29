@@ -110,23 +110,6 @@ func main() {
 	log.Printf("server shutdown successfully")
 }
 
-func discoverTokenService(registryHost string, registryPrefix string) (string, error) {
-	url := fmt.Sprintf("https://%s/%s/", registryHost, registryPrefix)
-	resp, err := http.Get(url)
-	if err != nil {
-		return "", fmt.Errorf("failed to query the registry host %s: %+v", registryHost, err)
-	}
-	hdr := resp.Header.Get("www-authenticate")
-	if hdr == "" {
-		return "", fmt.Errorf("www-authenticate header not returned from %s, cannot locate token endpoint", url)
-	}
-	matches := realm.FindStringSubmatch(hdr)
-	if len(matches) == 0 {
-		return "", fmt.Errorf("cannot locate 'realm' in %s response header www-authenticate: %s", url, hdr)
-	}
-	return matches[1], nil
-}
-
 // captureHostHeader is a middleware to capture Host header in a context key.
 func captureHostHeader(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
