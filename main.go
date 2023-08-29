@@ -16,8 +16,10 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -217,6 +219,23 @@ func (rrt *registryRoundtripper) RoundTrip(req *http.Request) (*http.Response, e
 
 	resp, err := http.DefaultTransport.RoundTrip(req)
 	if err == nil {
+		var bodyBytes []byte
+		var err error
+
+		if resp.Body != nil {
+			bodyBytes, err = ioutil.ReadAll(resp.Body)
+			if err != nil {
+				fmt.Printf("Body reading error: %v", err)
+			}
+		}
+		if len(bodyBytes) > 0 {
+			var prettyJSON bytes.Buffer
+			if err = json.Indent(&prettyJSON, bodyBytes, "", "\t"); err != nil {
+				fmt.Printf("JSON parse error: %v", err)
+			}
+			fmt.Println(prettyJSON.String())
+		}
+
 		log.Printf("request completed (status=%d) url=%s, body=%s", resp.StatusCode, req.URL, resp.Body)
 	} else {
 		log.Printf("request failed with error: %+v", err)
