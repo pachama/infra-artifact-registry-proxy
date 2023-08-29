@@ -219,7 +219,7 @@ func (rrt *registryRoundtripper) RoundTrip(req *http.Request) (*http.Response, e
 
 	resp, err := http.DefaultTransport.RoundTrip(req)
 	if err == nil {
-		log.Printf("request completed (status=%d) url=%s", resp.StatusCode, req.URL)
+		log.Printf("request completed (status=%d) url=%s, body=%s", resp.StatusCode, req.URL, resp.Body)
 	} else {
 		log.Printf("request failed with error: %+v", err)
 		return nil, err
