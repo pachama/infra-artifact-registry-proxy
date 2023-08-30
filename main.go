@@ -205,7 +205,7 @@ type registryRoundtripper struct {
 
 func (rrt *registryRoundtripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	log.Printf("request received. url=%s, line 207", req.URL)
-	TARGET_URL := os.Getenv("TARGET_URL")
+	REGISTRY_HOST := os.Getenv("REGISTRY_HOST")
 	HEROKU_HOST := os.Getenv("HEROKU_HOST")
 
 	if rrt.auth != nil {
@@ -236,7 +236,7 @@ func (rrt *registryRoundtripper) RoundTrip(req *http.Request) (*http.Response, e
 	bodyStr := string(bodyBytes)
 
 	// Step 3: Replace all occurrences of the target string
-	bodyStr = strings.ReplaceAll(bodyStr, TARGET_URL, HEROKU_HOST)
+	bodyStr = strings.ReplaceAll(bodyStr, REGISTRY_HOST, HEROKU_HOST)
 
 	resp.Body = io.NopCloser(strings.NewReader(bodyStr))
 	resp.ContentLength = int64(len(bodyStr))
