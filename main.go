@@ -219,14 +219,8 @@ type registryRoundtripper struct {
 
 // CloneRequest creates a shallow copy of the given request.
 func CloneRequest(req *http.Request) *http.Request {
-	// Create a new URL object
-	newURL := new(url.URL)
-	*newURL = *req.URL
-
-	// Create a shallow copy of the request with the new URL object
 	newReq := new(http.Request)
-	*newReq = *req
-	newReq.URL = newURL
+	newReq.URL = req.URL
 	newReq.Header = make(http.Header, len(req.Header))
 
 	// Copy header values
