@@ -219,8 +219,14 @@ type registryRoundtripper struct {
 
 // CloneRequest creates a shallow copy of the given request.
 func CloneRequest(req *http.Request) *http.Request {
+	// Create a new URL object
+	newURL := new(url.URL)
+	*newURL = *req.URL
+
+	// Create a shallow copy of the request with the new URL object
 	newReq := new(http.Request)
-	newReq.URL = req.URL
+	*newReq = *req
+	newReq.URL = newURL
 	newReq.Header = make(http.Header, len(req.Header))
 
 	// Copy header values
@@ -237,6 +243,7 @@ func CloneRequest(req *http.Request) *http.Request {
 
 func (rrt *registryRoundtripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	log.Printf("request received. url=%s, line 207", req.URL)
+	log.Printf("request received. body=%s, line 207", req.Body)
 	REGISTRY_HOST := os.Getenv("REGISTRY_HOST")
 	HEROKU_HOST := os.Getenv("HEROKU_HOST")
 
