@@ -251,6 +251,9 @@ func (rrt *registryRoundtripper) RoundTrip(req *http.Request) (*http.Response, e
 		return nil, err
 	}
 
+	io.Copy(io.Discard, req.Body)
+	log.Print("Drained request body.")
+
 	// Check Content-Type header
 	contentType := resp.Header.Get("Content-Type")
 	if contentType == "" {
@@ -278,8 +281,6 @@ func (rrt *registryRoundtripper) RoundTrip(req *http.Request) (*http.Response, e
 				resp.ContentLength = int64(len(updatedBody))
 				resp.Body = io.NopCloser(bytes.NewReader(updatedBody))
 				log.Print("Rewritten response body.\n", bodyStr)
-				io.Copy(io.Discard, req.Body)
-				log.Print("Drained request body.")
 			}
 		}
 	} else {
