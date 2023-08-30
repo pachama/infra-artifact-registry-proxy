@@ -74,7 +74,7 @@ func main() {
 	GOOGLE_APPLICATION_CREDENTIALS := os.Getenv("GOOGLE_APPLICATION_CREDENTIALS")
 	// Check if the environment variable is empty
 	if GOOGLE_APPLICATION_CREDENTIALS_JSON == "" {
-		fmt.Println("Environment variable GOOGLE_APPLICATION_CREDENTIALS_JSON is not set.")
+		log.Println("Environment variable GOOGLE_APPLICATION_CREDENTIALS_JSON is not set.")
 	} else {
 		err := os.WriteFile(GOOGLE_APPLICATION_CREDENTIALS, []byte(GOOGLE_APPLICATION_CREDENTIALS_JSON), 0644)
 		if err != nil {
@@ -224,16 +224,9 @@ func (rrt *registryRoundtripper) RoundTrip(req *http.Request) (*http.Response, e
 
 	if rrt.auth != nil {
 		req.Header.Set("Authorization", rrt.auth.AuthHeader())
-		log.Printf("I set the authorization header to")
-		log.Print(rrt.auth.AuthHeader())
+		log.Printf("I set the authorization header.")
 	} else {
-		log.Printf("I did not set the authorization header")
-	}
-	for name, values := range req.Header {
-		// Loop over all values for the name.
-		for _, value := range values {
-			fmt.Println(name, value)
-		}
+		log.Printf("I did not set the authorization header.")
 	}
 
 	origHost := req.Context().Value(ctxKeyOriginalHost).(string)
@@ -253,31 +246,34 @@ func (rrt *registryRoundtripper) RoundTrip(req *http.Request) (*http.Response, e
 	// Check Content-Type header
 	contentType := resp.Header.Get("Content-Type")
 	if contentType == "" {
-		fmt.Println("Could not find Content-Type header.")
+		log.Println("Could not find Content-Type header.")
 	} else {
-		fmt.Println(contentType)
+		log.Println(contentType)
 	}
 
 	// Check if the content is HTML
 	if contentType == "text/html" || contentType == "text/html; charset=utf-8" || contentType == "text/plain; charset=utf-8" {
-		fmt.Println("Received an HTML response.")
+		log.Println("Received an HTML response.")
 		REWRITE_HTML := os.Getenv("REWRITE_HTML")
 		if REWRITE_HTML != "" {
+			log.Println("Rewriting HTML.")
 			var buffer bytes.Buffer
 			_, err := io.Copy(&buffer, resp.Body)
 			resp.Body.Close() // Close the original body to free up resources
 			if err != nil {
-				fmt.Println("Error reading response body:", err)
+				log.Println("Error reading response body:", err)
 			} else {
+				log.Println("Success reading response body.")
 				bodyStr := buffer.String()
 				bodyStr = strings.ReplaceAll(bodyStr, REGISTRY_HOST, HEROKU_HOST)
 				updatedBody := []byte(bodyStr)
 				resp.ContentLength = int64(len(updatedBody))
 				resp.Body = io.NopCloser(bytes.NewReader(updatedBody))
+				log.Print("Rewritten response body.", bodyStr)
 			}
 		}
 	} else {
-		fmt.Println("Received a non-HTML response.")
+		log.Println("Received a non-HTML response.")
 	}
 
 	// Google Artifact Registry sends a "location: /artifacts-downloads/..." URL
