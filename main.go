@@ -248,7 +248,7 @@ func (rrt *registryRoundtripper) RoundTrip(req *http.Request) (*http.Response, e
 	}
 
 	// Check if the content is HTML
-	if contentType == "text/html" || contentType == "text/html; charset=utf-8" {
+	if contentType == "text/html" || contentType == "text/html; charset=utf-8" || contentType == "text/plain; charset=utf-8" {
 		fmt.Println("Received an HTML response.")
 		bodyBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
