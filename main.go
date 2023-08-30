@@ -268,9 +268,6 @@ func (rrt *registryRoundtripper) RoundTrip(req *http.Request) (*http.Response, e
 		return nil, err
 	}
 
-	io.Copy(io.Discard, req.Body)
-	log.Print("Drained request body.")
-
 	// Check Content-Type header
 	contentType := resp.Header.Get("Content-Type")
 	if contentType == "" {
