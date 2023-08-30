@@ -223,6 +223,10 @@ func (rrt *registryRoundtripper) RoundTrip(req *http.Request) (*http.Response, e
 
 	if rrt.auth != nil {
 		req.Header.Set("Authorization", rrt.auth.AuthHeader())
+		log.Printf("I set the authorization header to")
+		log.Print(rrt.auth.AuthHeader())
+	} else {
+		log.Printf("I did not set the authorization header")
 	}
 
 	origHost := req.Context().Value(ctxKeyOriginalHost).(string)
