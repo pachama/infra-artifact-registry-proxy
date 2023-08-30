@@ -269,7 +269,7 @@ func (rrt *registryRoundtripper) RoundTrip(req *http.Request) (*http.Response, e
 				updatedBody := []byte(bodyStr)
 				resp.ContentLength = int64(len(updatedBody))
 				resp.Body = io.NopCloser(bytes.NewReader(updatedBody))
-				log.Print("Rewritten response body.", bodyStr)
+				log.Print("Rewritten response body.\n", bodyStr)
 			}
 		}
 	} else {
