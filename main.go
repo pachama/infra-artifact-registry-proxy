@@ -205,6 +205,8 @@ type registryRoundtripper struct {
 
 func (rrt *registryRoundtripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	log.Printf("request received. url=%s, line 207", req.URL)
+	TARGET_URL := os.Getenv("TARGET_URL")
+	HEROKU_HOST := os.Getenv("HEROKU_HOST")
 
 	if rrt.auth != nil {
 		req.Header.Set("Authorization", rrt.auth.AuthHeader())
@@ -234,7 +236,7 @@ func (rrt *registryRoundtripper) RoundTrip(req *http.Request) (*http.Response, e
 	bodyStr := string(bodyBytes)
 
 	// Step 3: Replace all occurrences of the target string
-	bodyStr = strings.ReplaceAll(bodyStr, "us-central1-python.pkg.dev", "infra-artifact-registry-proxy-6667p4fkpq-uc.a.run.app")
+	bodyStr = strings.ReplaceAll(bodyStr, TARGET_URL, HEROKU_HOST)
 
 	resp.Body = io.NopCloser(strings.NewReader(bodyStr))
 	resp.ContentLength = int64(len(bodyStr))
