@@ -70,10 +70,10 @@ func main() {
 
 	tokenEndpoint, err := discoverTokenService(reg.host)
 	if err != nil {
-		log.Printf("target registry's token endpoint could not be discovered: %+v", err)
+		log.Printf("target registry's token endpoint could not be discovered: %+v line 73", err)
 		tokenEndpoint = ""
 	}
-	log.Printf("discovered token endpoint for backend registry: %s", tokenEndpoint)
+	log.Printf("discovered token endpoint for backend registry: %s, line 76", tokenEndpoint)
 
 	var auth authenticator
 	if basic := os.Getenv("AUTH_HEADER"); basic != "" {
@@ -83,7 +83,7 @@ func main() {
 		if err != nil {
 			log.Fatalf("could not read key file from %s: %+v", gcpKey, err)
 		}
-		log.Printf("using specified service account json key to authenticate proxied requests")
+		log.Printf("using specified service account json key to authenticate proxied requests line 86")
 		auth = authHeader("Basic " + base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("_json_key:%s", string(b)))))
 	}
 
@@ -99,7 +99,7 @@ func main() {
 
 	addr := fmt.Sprintf("%s:%s", host, port)
 	handler := captureHostHeader(mux)
-	log.Printf("starting to listen on %s", addr)
+	log.Printf("starting to listen on %s, line 102", addr)
 	if cert, key := os.Getenv("TLS_CERT"), os.Getenv("TLS_KEY"); cert != "" && key != "" {
 		err = http.ListenAndServeTLS(addr, cert, key, handler)
 	} else {
@@ -109,7 +109,7 @@ func main() {
 		log.Fatalf("listen error: %+v", err)
 	}
 
-	log.Printf("server shutdown successfully")
+	log.Printf("server shutdown successfully, line 112")
 }
 
 func discoverTokenService(registryHost string) (string, error) {
@@ -158,7 +158,7 @@ func tokenProxyHandler(tokenEndpoint, repoPrefix string) http.HandlerFunc {
 			u, _ := url.Parse(tokenEndpoint)
 			u.RawQuery = q.Encode()
 			r.URL = u
-			log.Printf("tokenProxyHandler: rewrote url:%s into:%s", orig, r.URL)
+			log.Printf("tokenProxyHandler: rewrote url:%s into:%s, line 161", orig, r.URL)
 			r.Host = u.Host
 		},
 	}).ServeHTTP
@@ -195,7 +195,7 @@ func rewriteRegistryURL(c registryConfig) func(*http.Request) {
 		req.URL.Scheme = "https"
 		req.URL.Host = c.host
 		req.URL.Path = re.ReplaceAllString(req.URL.Path, fmt.Sprintf("/%s/", c.repoPrefix))
-		log.Printf("rewrote url: %s into %s", u, req.URL)
+		log.Printf("rewrote url: %s into %s, line 198", u, req.URL)
 	}
 }
 
@@ -204,7 +204,7 @@ type registryRoundtripper struct {
 }
 
 func (rrt *registryRoundtripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	log.Printf("request received. url=%s", req.URL)
+	log.Printf("request received. url=%s, line 207", req.URL)
 
 	if rrt.auth != nil {
 		req.Header.Set("Authorization", rrt.auth.AuthHeader())
@@ -218,9 +218,9 @@ func (rrt *registryRoundtripper) RoundTrip(req *http.Request) (*http.Response, e
 	resp, err := http.DefaultTransport.RoundTrip(req)
 
 	if err == nil {
-		log.Printf("request completed (status=%d) url=%s", resp.StatusCode, req.URL)
+		log.Printf("request completed (status=%d) url=%s, line 221", resp.StatusCode, req.URL)
 	} else {
-		log.Printf("request failed with error: %+v", err)
+		log.Printf("request failed with error: %+v, line 223", err)
 		return nil, err
 	}
 
@@ -245,10 +245,7 @@ func (rrt *registryRoundtripper) RoundTrip(req *http.Request) (*http.Response, e
 		log.Fatalln(err)
 	}
 
-	fmt.Println(string(b))
-
-	file, _ := os.Open("/etc/nginx/nginx.conf")
-	fmt.Print(file)
+	fmt.Println(string(b), "line 248")
 
 	// Google Artifact Registry sends a "location: /artifacts-downloads/..." URL
 	// to download blobs. We don't want these routed to the proxy itself.
