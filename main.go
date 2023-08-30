@@ -68,6 +68,19 @@ func main() {
 		repoPrefix: repoPrefix,
 	}
 
+	// Fetch the value of the environment variable
+	GOOGLE_APPLICATION_CREDENTIALS_JSON := os.Getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
+	GOOGLE_APPLICATION_CREDENTIALS := os.Getenv("GOOGLE_APPLICATION_CREDENTIALS")
+	// Check if the environment variable is empty
+	if GOOGLE_APPLICATION_CREDENTIALS_JSON == "" {
+		fmt.Println("Environment variable GOOGLE_APPLICATION_CREDENTIALS_JSON is not set.")
+	} else {
+		err := os.WriteFile(GOOGLE_APPLICATION_CREDENTIALS, []byte(GOOGLE_APPLICATION_CREDENTIALS_JSON), 0644)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
 	tokenEndpoint, err := discoverTokenService(reg.host)
 	if err != nil {
 		log.Printf("target registry's token endpoint could not be discovered: %+v line 73", err)
