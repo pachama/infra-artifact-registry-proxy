@@ -16,6 +16,7 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
 	"fmt"
@@ -262,14 +263,18 @@ func (rrt *registryRoundtripper) RoundTrip(req *http.Request) (*http.Response, e
 		fmt.Println("Received an HTML response.")
 		REWRITE_HTML := os.Getenv("REWRITE_HTML")
 		if REWRITE_HTML != "" {
-			bodyBytes, err := io.ReadAll(resp.Body)
+			var buffer bytes.Buffer
+			_, err := io.Copy(&buffer, resp.Body)
+			resp.Body.Close() // Close the original body to free up resources
 			if err != nil {
-				panic(err)
+				fmt.Println("Error reading response body:", err)
+			} else {
+				bodyStr := buffer.String()
+				bodyStr = strings.ReplaceAll(bodyStr, REGISTRY_HOST, HEROKU_HOST)
+				updatedBody := []byte(bodyStr)
+				resp.ContentLength = int64(len(updatedBody))
+				resp.Body = io.NopCloser(bytes.NewReader(updatedBody))
 			}
-			bodyStr := string(bodyBytes)
-			bodyStr = strings.ReplaceAll(bodyStr, REGISTRY_HOST, HEROKU_HOST)
-			resp.ContentLength = int64(len(bodyStr))
-			resp.Body = io.NopCloser(strings.NewReader(bodyStr))
 		}
 	} else {
 		fmt.Println("Received a non-HTML response.")
