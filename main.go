@@ -239,28 +239,38 @@ func (rrt *registryRoundtripper) RoundTrip(req *http.Request) (*http.Response, e
 		return nil, err
 	}
 
-	// Step 1: Read the entire resp.Body into a byte slice
-	bodyBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		panic(err)
+	// Check Content-Type header
+	contentType := resp.Header.Get("Content-Type")
+	if contentType == "" {
+		fmt.Println("Could not find Content-Type header.")
+	} else {
+		fmt.Println(contentType)
 	}
 
-	// Step 2: Convert to string
-	bodyStr := string(bodyBytes)
+	// Check if the content is HTML
+	if contentType == "text/html" || contentType == "text/html; charset=utf-8" {
+		fmt.Println("Received an HTML response.")
+		// Step 1: Read the entire resp.Body into a byte slice
+		bodyBytes, err := io.ReadAll(resp.Body)
+		if err != nil {
+			panic(err)
+		}
+		// Step 2: Convert to string
+		bodyStr := string(bodyBytes)
+		// Step 3: Replace all occurrences of the target string
+		bodyStr = strings.ReplaceAll(bodyStr, REGISTRY_HOST, HEROKU_HOST)
+		resp.Body = io.NopCloser(strings.NewReader(bodyStr))
+		resp.ContentLength = int64(len(bodyStr))
+		// Now, resp.Body contains the modified content.
+		b, err := httputil.DumpResponse(resp, true)
+		if err != nil {
+			log.Fatalln(err)
+		}
 
-	// Step 3: Replace all occurrences of the target string
-	bodyStr = strings.ReplaceAll(bodyStr, REGISTRY_HOST, HEROKU_HOST)
-
-	resp.Body = io.NopCloser(strings.NewReader(bodyStr))
-	resp.ContentLength = int64(len(bodyStr))
-
-	// // Now, resp.Body contains the modified content.
-	// b, err := httputil.DumpResponse(resp, true)
-	// if err != nil {
-	// 	log.Fatalln(err)
-	// }
-
-	// fmt.Println(string(b), "line 248")
+		fmt.Println(string(b), "line 248")
+	} else {
+		fmt.Println("Received a non-HTML response.")
+	}
 
 	// Google Artifact Registry sends a "location: /artifacts-downloads/..." URL
 	// to download blobs. We don't want these routed to the proxy itself.
