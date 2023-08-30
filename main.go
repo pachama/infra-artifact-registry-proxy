@@ -217,6 +217,14 @@ type registryRoundtripper struct {
 	auth authenticator
 }
 
+// Heroku's suggestion to drain the body
+func drainBody(r *http.Request) {
+	// check if we have a body too big for buffering
+	if r.Body != nil || r.Body != http.NoBody || r.ContentLength > 1e6 {
+		io.Copy(io.Discard, r.Body)
+	}
+}
+
 func (rrt *registryRoundtripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	log.Printf("request received. url=%s, line 207", req.URL)
 	REGISTRY_HOST := os.Getenv("REGISTRY_HOST")
@@ -270,6 +278,8 @@ func (rrt *registryRoundtripper) RoundTrip(req *http.Request) (*http.Response, e
 				resp.ContentLength = int64(len(updatedBody))
 				resp.Body = io.NopCloser(bytes.NewReader(updatedBody))
 				log.Print("Rewritten response body.\n", bodyStr)
+				drainBody(req)
+				log.Print("Drained request body.")
 			}
 		}
 	} else {
