@@ -228,6 +228,12 @@ func (rrt *registryRoundtripper) RoundTrip(req *http.Request) (*http.Response, e
 	} else {
 		log.Printf("I did not set the authorization header")
 	}
+	for name, values := range req.Header {
+		// Loop over all values for the name.
+		for _, value := range values {
+			fmt.Println(name, value)
+		}
+	}
 
 	origHost := req.Context().Value(ctxKeyOriginalHost).(string)
 	if ua := req.Header.Get("user-agent"); ua != "" {
