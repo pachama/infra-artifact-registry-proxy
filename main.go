@@ -217,12 +217,28 @@ type registryRoundtripper struct {
 	auth authenticator
 }
 
-// Heroku's suggestion to drain the body
-func drainBody(r *http.Request) {
-	// check if we have a body too big for buffering
-	if r.Body != nil || r.Body != http.NoBody || r.ContentLength > 1e6 {
-		io.Copy(io.Discard, r.Body)
+// CloneRequest creates a shallow copy of the given request.
+func CloneRequest(req *http.Request) *http.Request {
+	// Create a new URL object
+	newURL := new(url.URL)
+	*newURL = *req.URL
+
+	// Create a shallow copy of the request with the new URL object
+	newReq := new(http.Request)
+	*newReq = *req
+	newReq.URL = newURL
+	newReq.Header = make(http.Header, len(req.Header))
+
+	// Copy header values
+	for k, s := range req.Header {
+		newReq.Header[k] = append([]string(nil), s...)
 	}
+
+	// If you also need to copy the request body, you'll have to take additional steps.
+	// Note that once you read from the original request's Body, you'll need to replace it
+	// for subsequent reads.
+
+	return newReq
 }
 
 func (rrt *registryRoundtripper) RoundTrip(req *http.Request) (*http.Response, error) {
@@ -242,7 +258,8 @@ func (rrt *registryRoundtripper) RoundTrip(req *http.Request) (*http.Response, e
 		req.Header.Set("user-agent", "gcr-proxy/0.1 customDomain/"+origHost+" "+ua)
 	}
 
-	resp, err := http.DefaultTransport.RoundTrip(req)
+	newReq := CloneRequest(req)
+	resp, err := http.DefaultTransport.RoundTrip(newReq)
 
 	if err == nil {
 		log.Printf("request completed (status=%d) url=%s, line 221", resp.StatusCode, req.URL)
