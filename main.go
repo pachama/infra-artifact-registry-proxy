@@ -239,13 +239,13 @@ func (rrt *registryRoundtripper) RoundTrip(req *http.Request) (*http.Response, e
 	resp.Body = io.NopCloser(strings.NewReader(bodyStr))
 	resp.ContentLength = int64(len(bodyStr))
 
-	// Now, resp.Body contains the modified content.
-	b, err := httputil.DumpResponse(resp, true)
-	if err != nil {
-		log.Fatalln(err)
-	}
+	// // Now, resp.Body contains the modified content.
+	// b, err := httputil.DumpResponse(resp, true)
+	// if err != nil {
+	// 	log.Fatalln(err)
+	// }
 
-	fmt.Println(string(b), "line 248")
+	// fmt.Println(string(b), "line 248")
 
 	// Google Artifact Registry sends a "location: /artifacts-downloads/..." URL
 	// to download blobs. We don't want these routed to the proxy itself.
